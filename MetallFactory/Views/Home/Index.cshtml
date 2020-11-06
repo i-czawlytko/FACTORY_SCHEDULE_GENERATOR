@@ -1,20 +1,12 @@
-﻿@model List<ScheduleRow>
-
+﻿
 @{
     ViewData["Title"] = "MetallFactory";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
+<div class="text-center text-uppercase">
+    <h1 class="display-4 text-uppercase">Генератор расписания работы оборудования</h1>
 </div>
 
-@*<a asp-action="Schedule">Сгенерировать расписание</a>*@
-
-<table>
-    <tr><th>Партия</th><th>Машина</th><th>Начало</th><th>Окончание</th></tr>
-    @foreach (var r in Model)
-    {
-        <tr><td>@r.Party</td><td>@r.Machine</td><td>@r.StartTime</td><td>@r.EndTime</td></tr>
-    }
-</table>
-<div>Всего загрузок - @Model.Count</div>
+<div class="align-content-center m-5">
+    <a asp-action="Schedule" class="btn btn-primary btn-lg">Сгенерировать</a>
+</div>

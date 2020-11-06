@@ -24,13 +24,11 @@ namespace MetallFactory.Controllers
 
         public IActionResult Index()
         {
-            //repository.Load();
-            return View(scheduleGenerator.Generate());
+            return View();
         }
 
         public IActionResult Schedule()
         {
-            //repository.Load();
             return View(scheduleGenerator.Generate());
         }
         public IActionResult Privacy()

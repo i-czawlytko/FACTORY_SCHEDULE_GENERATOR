@@ -1,6 +1,8 @@
-﻿using Microsoft.Office.Interop.Excel;
+﻿
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -24,159 +26,107 @@ namespace MetallFactory.Models
 
         private void LoadMaterials()
         {
-            Application xlApp;
-            Workbook xlWorkBook;
-            Worksheet xlWorkSheet;
-            Microsoft.Office.Interop.Excel.Range range;
-
             Materials = new List<Material>();
 
-            int rCnt;
-            int rw = 0;
+            //read the Excel file as byte array
+            byte[] bin = File.ReadAllBytes(@"C:\xlsx_data\nomenclatures.xlsx");
 
-            xlApp = new Application();
+            //byte[] bin = File.ReadAllBytes(Server.MapPath("ExcelDemo.xlsx"));
 
-            xlWorkBook = xlApp.Workbooks.Open(@"c:\xlsx_data\nomenclatures.xlsx");
-
-            xlWorkSheet = (Worksheet)xlWorkBook.Worksheets.get_Item(1);
-
-            range = xlWorkSheet.UsedRange;
-
-            rw = range.Rows.Count;
-
-            for (rCnt = 2; rCnt <= rw; rCnt++)
+            using (MemoryStream stream = new MemoryStream(bin))
+            using (OfficeOpenXml.ExcelPackage excelPackage = new ExcelPackage(stream))
             {
-                Material mat = new Material();
-                //get ABC or XYZ
-                mat.Id = int.Parse((range.Cells[rCnt, 1] as Microsoft.Office.Interop.Excel.Range).Value2.ToString());
-                mat.Name = (string)(range.Cells[rCnt, 2] as Microsoft.Office.Interop.Excel.Range).Value2.ToString();
-                Materials.Add(mat);
+                foreach (ExcelWorksheet worksheet in excelPackage.Workbook.Worksheets)
+                {
+                    for (int i = worksheet.Dimension.Start.Row+1; i <= worksheet.Dimension.End.Row; i++)
+                    {
+                        Material mat = new Material();
+
+                        mat.Id = int.Parse(worksheet.Cells[i, 1].Value.ToString());
+                        mat.Name = worksheet.Cells[i, 2].Value.ToString();
+                        Materials.Add(mat);
+                    }
+                }
             }
-
-            //release the resources
-            xlWorkBook.Close(true, null, null);
-            xlApp.Quit();
-            Marshal.ReleaseComObject(xlWorkSheet);
-            Marshal.ReleaseComObject(xlWorkBook);
-            Marshal.ReleaseComObject(xlApp);
         }
-
+        
         private void LoadMachines()
         {
-            Application xlApp;
-            Workbook xlWorkBook;
-            Worksheet xlWorkSheet;
-            Microsoft.Office.Interop.Excel.Range range;
-
             Machines = new List<Machine>();
 
-            int rCnt;
-            int rw = 0;
+            //read the Excel file as byte array
+            byte[] bin = File.ReadAllBytes(@"C:\xlsx_data\machine_tools.xlsx");
 
-            xlApp = new Application();
+            //byte[] bin = File.ReadAllBytes(Server.MapPath("ExcelDemo.xlsx"));
 
-            xlWorkBook = xlApp.Workbooks.Open(@"c:\xlsx_data\machine_tools.xlsx");
-
-            xlWorkSheet = (Worksheet)xlWorkBook.Worksheets.get_Item(1);
-
-            range = xlWorkSheet.UsedRange;
-
-            rw = range.Rows.Count;
-
-            for (rCnt = 2; rCnt <= rw; rCnt++)
+            using (MemoryStream stream = new MemoryStream(bin))
+            using (OfficeOpenXml.ExcelPackage excelPackage = new ExcelPackage(stream))
             {
-                Machine machine = new Machine();
-                //get ABC or XYZ
-                machine.Id = int.Parse((range.Cells[rCnt, 1] as Microsoft.Office.Interop.Excel.Range).Value2.ToString());
-                machine.Name = (string)(range.Cells[rCnt, 2] as Microsoft.Office.Interop.Excel.Range).Value2.ToString();
-                Machines.Add(machine);
-            }
+                foreach (ExcelWorksheet worksheet in excelPackage.Workbook.Worksheets)
+                {
+                    for (int i = worksheet.Dimension.Start.Row+1; i <= worksheet.Dimension.End.Row; i++)
+                    {
+                        Machine machine = new Machine();
 
-            //release the resources
-            xlWorkBook.Close(true, null, null);
-            xlApp.Quit();
-            Marshal.ReleaseComObject(xlWorkSheet);
-            Marshal.ReleaseComObject(xlWorkBook);
-            Marshal.ReleaseComObject(xlApp);
+                        machine.Id = int.Parse(worksheet.Cells[i, 1].Value.ToString());
+                        machine.Name = worksheet.Cells[i, 2].Value.ToString();
+                        Machines.Add(machine);
+                    }
+                }
+            }
         }
 
         private void LoadParties()
         {
-            Application xlApp;
-            Workbook xlWorkBook;
-            Worksheet xlWorkSheet;
-            Microsoft.Office.Interop.Excel.Range range;
-
             Parties = new List<Party>();
 
-            int rCnt;
-            int rw = 0;
+            //read the Excel file as byte array
+            byte[] bin = File.ReadAllBytes(@"C:\xlsx_data\parties.xlsx");
 
-            xlApp = new Application();
+            //byte[] bin = File.ReadAllBytes(Server.MapPath("ExcelDemo.xlsx"));
 
-            xlWorkBook = xlApp.Workbooks.Open(@"c:\xlsx_data\parties.xlsx");
-
-            xlWorkSheet = (Worksheet)xlWorkBook.Worksheets.get_Item(1);
-
-            range = xlWorkSheet.UsedRange;
-
-            rw = range.Rows.Count;
-
-            for (rCnt = 2; rCnt <= rw; rCnt++)
+            using (MemoryStream stream = new MemoryStream(bin))
+            using (OfficeOpenXml.ExcelPackage excelPackage = new ExcelPackage(stream))
             {
-                Party party = new Party();
-                //get ABC or XYZ
-                party.Id = int.Parse((range.Cells[rCnt, 1] as Microsoft.Office.Interop.Excel.Range).Value2.ToString());
-                party.MaterialId = int.Parse((range.Cells[rCnt, 2] as Microsoft.Office.Interop.Excel.Range).Value2.ToString());
-                Parties.Add(party);
-            }
+                foreach (ExcelWorksheet worksheet in excelPackage.Workbook.Worksheets)
+                {
+                    for (int i = worksheet.Dimension.Start.Row + 1; i <= worksheet.Dimension.End.Row; i++)
+                    {
+                        Party party = new Party();
 
-            //release the resources
-            xlWorkBook.Close(true, null, null);
-            xlApp.Quit();
-            Marshal.ReleaseComObject(xlWorkSheet);
-            Marshal.ReleaseComObject(xlWorkBook);
-            Marshal.ReleaseComObject(xlApp);
+                        party.Id = int.Parse(worksheet.Cells[i, 1].Value.ToString());
+                        party.MaterialId = int.Parse(worksheet.Cells[i, 2].Value.ToString());
+                        Parties.Add(party);
+                    }
+                }
+            }
         }
 
         private void LoadTimes()
         {
-            Application xlApp;
-            Workbook xlWorkBook;
-            Worksheet xlWorkSheet;
-            Microsoft.Office.Interop.Excel.Range range;
-
             Times = new List<TimeInfo>();
 
-            int rCnt;
-            int rw = 0;
+            //read the Excel file as byte array
+            byte[] bin = File.ReadAllBytes(@"C:\xlsx_data\times.xlsx");
 
-            xlApp = new Application();
+            //byte[] bin = File.ReadAllBytes(Server.MapPath("ExcelDemo.xlsx"));
 
-            xlWorkBook = xlApp.Workbooks.Open(@"c:\xlsx_data\times.xlsx");
-
-            xlWorkSheet = (Worksheet)xlWorkBook.Worksheets.get_Item(1);
-
-            range = xlWorkSheet.UsedRange;
-
-            rw = range.Rows.Count;
-
-            for (rCnt = 2; rCnt <= rw; rCnt++)
+            using (MemoryStream stream = new MemoryStream(bin))
+            using (OfficeOpenXml.ExcelPackage excelPackage = new ExcelPackage(stream))
             {
-                TimeInfo tinfo = new TimeInfo();
-                //get ABC or XYZ
-                tinfo.MachineId = int.Parse((range.Cells[rCnt, 1] as Microsoft.Office.Interop.Excel.Range).Value2.ToString());
-                tinfo.MaterialId = int.Parse((range.Cells[rCnt, 2] as Microsoft.Office.Interop.Excel.Range).Value2.ToString());
-                tinfo.OperationTime = int.Parse((range.Cells[rCnt, 3] as Microsoft.Office.Interop.Excel.Range).Value2.ToString());
-                Times.Add(tinfo);
-            }
+                foreach (ExcelWorksheet worksheet in excelPackage.Workbook.Worksheets)
+                {
+                    for (int i = worksheet.Dimension.Start.Row + 1; i <= worksheet.Dimension.End.Row; i++)
+                    {
+                        TimeInfo tinfo = new TimeInfo();
 
-            //release the resources
-            xlWorkBook.Close(true, null, null);
-            xlApp.Quit();
-            Marshal.ReleaseComObject(xlWorkSheet);
-            Marshal.ReleaseComObject(xlWorkBook);
-            Marshal.ReleaseComObject(xlApp);
+                        tinfo.MachineId = int.Parse(worksheet.Cells[i, 1].Value.ToString());
+                        tinfo.MaterialId = int.Parse(worksheet.Cells[i, 2].Value.ToString());
+                        tinfo.OperationTime = int.Parse(worksheet.Cells[i, 3].Value.ToString());
+                        Times.Add(tinfo);
+                    }
+                }
+            }
         }
 
         private void TIRestructure()
@@ -198,5 +148,6 @@ namespace MetallFactory.Models
                 StructuredTimes.Add(tis);
             }
         }
+        
     }
 }

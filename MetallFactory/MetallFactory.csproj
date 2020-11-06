@@ -1,20 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <COMReference Include="Microsoft.Office.Core">
-      <Guid>00020813-0000-0000-c000-000000000046</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>6</VersionMinor>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Lcid>0</Lcid>
-      <Isolated>false</Isolated>
-	  <EmbedInteropTypes>True</EmbedInteropTypes>
-	  <Private>true</Private>
-    </COMReference>
+        <PackageReference Include="EPPlus.Core" Version="1.5.4" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,10 @@
+﻿@model List<ScheduleRow>
+
+<table>
+    <tr><th>Партия</th><th>Машина</th><th>Начало</th><th>Окончание</th></tr>
+    @foreach (var r in Model)
+    {
+        <tr><td>@r.Party</td><td>@r.Machine</td><td>@r.StartTime</td><td>@r.EndTime</td></tr>
+    }
+</table>
+<div>Всего загрузок - @Model.Count</div>

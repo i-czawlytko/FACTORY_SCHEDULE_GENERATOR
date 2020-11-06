@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server;
+using Microsoft.AspNetCore.Hosting;
 
 namespace MetallFactory.Models
 {
@@ -16,6 +18,13 @@ namespace MetallFactory.Models
         public List<Party> Parties { get; set; }
         public List<TimeInfo> Times { get; set; }
         public List<TIStructured> StructuredTimes { get; set; }
+
+        private readonly IWebHostEnvironment _webHostEnvironment;
+
+        public XlsxRepository(IWebHostEnvironment webHostEnvironment)
+        {
+            _webHostEnvironment = webHostEnvironment;
+        }
         public void Load()
         {
             this.LoadMaterials();
@@ -28,10 +37,11 @@ namespace MetallFactory.Models
         {
             Materials = new List<Material>();
 
-            //read the Excel file as byte array
-            byte[] bin = File.ReadAllBytes(@"C:\xlsx_data\nomenclatures.xlsx");
+            string contentRootPath = _webHostEnvironment.ContentRootPath;
 
-            //byte[] bin = File.ReadAllBytes(Server.MapPath("ExcelDemo.xlsx"));
+            string path = Path.Combine(contentRootPath, "xlsx_data", "nomenclatures.xlsx");
+
+            byte[] bin = File.ReadAllBytes(path);
 
             using (MemoryStream stream = new MemoryStream(bin))
             using (OfficeOpenXml.ExcelPackage excelPackage = new ExcelPackage(stream))
@@ -54,10 +64,11 @@ namespace MetallFactory.Models
         {
             Machines = new List<Machine>();
 
-            //read the Excel file as byte array
-            byte[] bin = File.ReadAllBytes(@"C:\xlsx_data\machine_tools.xlsx");
+            string contentRootPath = _webHostEnvironment.ContentRootPath;
 
-            //byte[] bin = File.ReadAllBytes(Server.MapPath("ExcelDemo.xlsx"));
+            string path = Path.Combine(contentRootPath, "xlsx_data", "machine_tools.xlsx");
+
+            byte[] bin = File.ReadAllBytes(path);
 
             using (MemoryStream stream = new MemoryStream(bin))
             using (OfficeOpenXml.ExcelPackage excelPackage = new ExcelPackage(stream))
@@ -80,10 +91,11 @@ namespace MetallFactory.Models
         {
             Parties = new List<Party>();
 
-            //read the Excel file as byte array
-            byte[] bin = File.ReadAllBytes(@"C:\xlsx_data\parties.xlsx");
+            string contentRootPath = _webHostEnvironment.ContentRootPath;
 
-            //byte[] bin = File.ReadAllBytes(Server.MapPath("ExcelDemo.xlsx"));
+            string path = Path.Combine(contentRootPath, "xlsx_data", "parties.xlsx");
+
+            byte[] bin = File.ReadAllBytes(path);
 
             using (MemoryStream stream = new MemoryStream(bin))
             using (OfficeOpenXml.ExcelPackage excelPackage = new ExcelPackage(stream))
@@ -106,10 +118,11 @@ namespace MetallFactory.Models
         {
             Times = new List<TimeInfo>();
 
-            //read the Excel file as byte array
-            byte[] bin = File.ReadAllBytes(@"C:\xlsx_data\times.xlsx");
+            string contentRootPath = _webHostEnvironment.ContentRootPath;
 
-            //byte[] bin = File.ReadAllBytes(Server.MapPath("ExcelDemo.xlsx"));
+            string path = Path.Combine(contentRootPath, "xlsx_data", "times.xlsx");
+
+            byte[] bin = File.ReadAllBytes(path);
 
             using (MemoryStream stream = new MemoryStream(bin))
             using (OfficeOpenXml.ExcelPackage excelPackage = new ExcelPackage(stream))

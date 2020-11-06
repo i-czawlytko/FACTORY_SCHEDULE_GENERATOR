@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MetallFactory.Models
+namespace MetallFactory.ViewModels
 {
-    public class ScheduleRow
+    public class ScheduleRowVM
     {
         public int PartyId { get; set; }
-        public int MaterialId { get; set; }
-        public int MachineId { get; set; }
+        public string MachineName { get; set; }
+        public string MaterialName { get; set; }
         public int StartTime { get; set; }
         public int EndTime { get; set; }
     }

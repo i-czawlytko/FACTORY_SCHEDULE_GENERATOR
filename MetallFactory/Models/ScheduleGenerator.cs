@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MetallFactory.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -45,8 +46,9 @@ namespace MetallFactory.Models
                             if (parties.Remove(party))
                             {
                                 schedule.Add(new ScheduleRow {
-                                    Party=e.Value,
-                                    Machine=current_machine_info.MachineId,
+                                    PartyId = party.Id,
+                                    MaterialId=e.Value,
+                                    MachineId=current_machine_info.MachineId,
                                     StartTime=current_time,
                                     EndTime=(current_time+e.Key)});
 
@@ -61,6 +63,18 @@ namespace MetallFactory.Models
             }
             return schedule;
 
+        }
+
+        public IEnumerable<ScheduleRowVM> GetSchedule()
+        {
+            var result = from sr in schedule
+                         join m in repository.Machines on sr.MachineId equals m.Id
+                         join mat in repository.Materials on sr.MaterialId equals mat.Id
+                         select new ScheduleRowVM { PartyId = sr.PartyId, MachineName = m.Name, MaterialName = mat.Name, StartTime = sr.StartTime, EndTime = sr.EndTime };
+            return result;
+            //var result = from pl in players
+            //                join t in teams on pl.Team equals t.Name
+            //                select new { Name = pl.Name, Team = pl.Team, Country = t.Country };
         }
     }
 }

@@ -29,7 +29,8 @@ namespace MetallFactory.Controllers
 
         public IActionResult Schedule()
         {
-            return View(scheduleGenerator.Generate());
+            scheduleGenerator.Generate();
+            return View(scheduleGenerator.GetSchedule());
         }
         public IActionResult Privacy()
         {

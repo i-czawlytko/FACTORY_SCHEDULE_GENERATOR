@@ -1,6 +1,9 @@
 ﻿using MetallFactory.ViewModels;
+using Microsoft.AspNetCore.Hosting;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -12,10 +15,13 @@ namespace MetallFactory.Models
         private IRepository repository;
 
         private List<ScheduleRow> schedule;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ScheduleGenerator(IRepository repo)
+
+        public ScheduleGenerator(IRepository repo, IWebHostEnvironment webHostEnvironment)
         {
             repository = repo;
+            _webHostEnvironment = webHostEnvironment;
             repository.Load();
             schedule = new List<ScheduleRow>();
         }
@@ -72,9 +78,39 @@ namespace MetallFactory.Models
                          join mat in repository.Materials on sr.MaterialId equals mat.Id
                          select new ScheduleRowVM { PartyId = sr.PartyId, MachineName = m.Name, MaterialName = mat.Name, StartTime = sr.StartTime, EndTime = sr.EndTime };
             return result;
-            //var result = from pl in players
-            //                join t in teams on pl.Team equals t.Name
-            //                select new { Name = pl.Name, Team = pl.Team, Country = t.Country };
+        }
+        public void ExportToXlxs()
+        {
+            string contentRootPath = _webHostEnvironment.ContentRootPath;
+
+            string path = Path.Combine(contentRootPath, "output", "schedule.xlsx");
+
+            FileInfo f = new FileInfo(path);
+            if (f.Exists) f.Delete();
+            using (ExcelPackage ep = new ExcelPackage(f))
+            {
+                ExcelWorksheet sch = ep.Workbook.Worksheets.Add("Schedule");
+                sch.Cells[1, 1].Value = "ID партии"; ;
+                sch.Cells[1, 2].Value = "Материал";
+                sch.Cells[1, 3].Value = "Машина";
+                sch.Cells[1, 4].Value = "Начало";
+                sch.Cells[1, 5].Value = "Окончание";
+
+                this.Generate();
+                var src = this.GetSchedule();
+
+                int counter = 2;
+                foreach(var e in src)
+                {
+                    sch.Cells[counter, 1].Value = e.PartyId;
+                    sch.Cells[counter, 2].Value = e.MaterialName;
+                    sch.Cells[counter, 3].Value = e.MachineName;
+                    sch.Cells[counter, 4].Value = e.StartTime;
+                    sch.Cells[counter, 5].Value = e.EndTime;
+                    counter++;
+                }
+                ep.Save();
+            }
         }
     }
 }

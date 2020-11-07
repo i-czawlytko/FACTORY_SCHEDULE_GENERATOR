@@ -1,4 +1,5 @@
-﻿
+﻿@model IEnumerable<Machine>
+
 @{
     ViewData["Title"] = "MetallFactory";
 }
@@ -8,5 +9,68 @@
 </div>
 
 <div class="align-content-center m-5">
-    <a asp-action="Schedule" class="btn btn-primary btn-lg">Сгенерировать</a>
+    <a asp-action="Schedule" class="btn btn-primary btn-lg">Сгенерировать расписание</a>
 </div>
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-7 p-3 m-3">
+            <p class="display-4 text-center">Партии</p>
+            <canvas id="mats_chart" class="d-block"></canvas>
+        </div>
+
+        <div class="col-sm-4 p-3 m-3">
+            <p class="display-4 text-center">Оборудование</p>
+            <table class="table table-striped" style="text-align:center">
+                <tr><th>ID</th><th>Название</th></tr>
+                @foreach (var e in Model)
+                {
+                    <tr><td>@e.Id</td><td>@e.Name</td></tr>
+                }
+            </table>
+        </div>
+    </div>
+</div>
+
+
+@section scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js" integrity="sha512-d9xgZrVZpmmQlfonhQUvTR7lMPtO7NkZMkA0ABN3PHCbKA5nqylQ/yWlFAyY6hYgdF1Qh6nYiuADWwKB4C2WSw==" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+        Chart.defaults.scale.ticks.beginAtZero = true;
+
+        $(document).ready(setup);
+        function setup() {
+            var options = {
+                url: '@Url.Action("GetChart")',
+                type: "GET",
+                dataType: "json",
+                success: drawChart
+            }
+            $.ajax(options);
+        }
+
+        function drawChart(data) {
+            var panel1 = $('#mats_chart').get(0).getContext("2d");
+            var barChart = new Chart(panel1, {
+                type: 'bar',
+                options: {
+                    legend: {
+                        display: false
+                    }
+                },
+                data: {
+                    labels: data.names,
+                    datasets: [{
+                        data: data.quantity,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(153, 102, 255, 0.6)'
+                        ]
+                    }]
+                }
+            });
+        }
+    </script>
+}

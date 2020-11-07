@@ -19,12 +19,19 @@ namespace MetallFactory.Controllers
         {
             _logger = logger;
             repository = repo;
+            repo.Load();
             scheduleGenerator = _scheduleGenerator;
         }
 
         public IActionResult Index()
         {
-            return View();
+            return View(repository.Machines);
+        }
+
+        public IActionResult ExportToExcel()
+        {
+            scheduleGenerator.ExportToXlxs();
+            return RedirectToAction("Index");
         }
 
         public IActionResult Schedule()
@@ -32,9 +39,20 @@ namespace MetallFactory.Controllers
             scheduleGenerator.Generate();
             return View(scheduleGenerator.GetSchedule());
         }
-        public IActionResult Privacy()
+        public JsonResult GetChart()
         {
-            return View();
+
+            var groups = from p in repository.Parties
+                      join mat in repository.Materials on p.MaterialId equals mat.Id
+                      group repository.Parties by mat.Name into g
+                      select new {Name = g.Key, Count = g.Count() };
+            var Names = groups.Select(x => x.Name);
+            var Quantity = groups.Select(x => x.Count);
+
+
+            return Json(new {
+                names = Names,
+                quantity = Quantity});
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

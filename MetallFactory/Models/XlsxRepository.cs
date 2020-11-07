@@ -18,19 +18,19 @@ namespace MetallFactory.Models
         public List<Party> Parties { get; set; }
         public List<TimeInfo> Times { get; set; }
         public List<TIStructured> StructuredTimes { get; set; }
+        public List<CompetitorsInfo> Competitors { get; set; }
 
         private readonly IWebHostEnvironment _webHostEnvironment;
 
         public XlsxRepository(IWebHostEnvironment webHostEnvironment)
         {
             _webHostEnvironment = webHostEnvironment;
-        }
-        public void Load()
-        {
             this.LoadMaterials();
             this.LoadMachines();
             this.LoadParties();
+            this.LoadTimes();
             this.TIRestructure();
+            this.LoadCompetitors();
         }
 
         private void LoadMaterials()
@@ -144,7 +144,6 @@ namespace MetallFactory.Models
 
         private void TIRestructure()
         {
-            this.LoadTimes();
             StructuredTimes = new List<TIStructured>();
             var machines = this.Times.Select(x => x.MachineId).Distinct();
             foreach(var m in machines)
@@ -159,6 +158,25 @@ namespace MetallFactory.Models
                     tis.TimeDict.Add(mat.OperationTime,mat.MaterialId);
                 }
                 StructuredTimes.Add(tis);
+            }
+        }
+
+        private void LoadCompetitors()
+        {
+            this.Competitors = new List<CompetitorsInfo>();
+            var groups = from ti in this.Times
+                      group ti by ti.MaterialId;
+            foreach(var g in groups)
+            {
+                CompetitorsInfo ci = new CompetitorsInfo();
+                ci.MachinesOps = new Dictionary<int, int>();
+
+                ci.MatId = g.Key;
+                foreach(var e in g)
+                {
+                    ci.MachinesOps.Add(e.MachineId,e.OperationTime);
+                }
+                this.Competitors.Add(ci);
             }
         }
         

@@ -22,7 +22,6 @@ namespace MetallFactory.Models
         {
             repository = repo;
             _webHostEnvironment = webHostEnvironment;
-            repository.Load();
             schedule = new List<ScheduleRow>();
         }
         public List<ScheduleRow> Generate()

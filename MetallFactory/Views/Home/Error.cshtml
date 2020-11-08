@@ -1,0 +1,8 @@
+﻿<div class="container">
+    <p class="display-4 text-uppercase">Страница ошибок</p>
+    @if (TempData["message"] != null)
+    {
+        <div class="alert alert-danger m-3">@TempData["message"]</div>
+    }
+
+</div>

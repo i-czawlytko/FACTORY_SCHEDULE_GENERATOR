@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Machine>
+﻿@model MetallFactory.ViewModels.MainViewModel
 
 @{
     ViewData["Title"] = "MetallFactory";
@@ -8,9 +8,13 @@
     <h1 class="display-4 text-uppercase">Генератор расписания работы оборудования</h1>
 </div>
 
-<div class="align-content-center m-5">
-    <a asp-action="Schedule" class="btn btn-primary btn-lg">Сгенерировать расписание</a>
-</div>
+@if (!Model.Errors.Any())
+{
+    <div class="align-content-center m-5">
+        <a asp-action="Schedule" class="btn btn-primary btn-lg">Сгенерировать расписание</a>
+    </div>
+}
+
 
 
 <div class="container">
@@ -24,13 +28,25 @@
             <p class="display-4 text-center">Оборудование</p>
             <table class="table table-striped" style="text-align:center">
                 <tr><th>ID</th><th>Название</th></tr>
-                @foreach (var e in Model)
+                @foreach (var e in Model.Machines)
                 {
                     <tr><td>@e.Id</td><td>@e.Name</td></tr>
                 }
             </table>
         </div>
     </div>
+
+    @if (Model.Errors.Any())
+    {
+        <div class="row m-3">
+            <div class="alert alert-danger">Генерация расписания невозможна из-за несогласованности в исходных данных</div>
+            @foreach (var s in Model.Errors)
+            {
+                <div class="alert alert-warning">@s</div>
+            }
+        </div>
+    }
+
 </div>
 
 

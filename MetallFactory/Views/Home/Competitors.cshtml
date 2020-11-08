@@ -1,0 +1,12 @@
+﻿@model List<TIStructured>
+
+<div class="container"></div>
+<p class="display-4">Тесты</p>
+@foreach(var s in Model)
+{
+    <div>@s.MachineId</div>
+    @foreach(var e in s.TimeDict)
+    {
+        <div>***@e.Item1: @e.Item2</div>
+    }
+}

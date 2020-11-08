@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MetallFactory.Models;
+using MetallFactory.ViewModels;
 
 namespace MetallFactory.Controllers
 {
@@ -17,14 +18,33 @@ namespace MetallFactory.Controllers
 
         public HomeController(ILogger<HomeController> logger, IRepository repo, ScheduleGenerator _scheduleGenerator)
         {
-            _logger = logger;
-            repository = repo;
-            scheduleGenerator = _scheduleGenerator;
+                _logger = logger;
+                repository = repo;
+                scheduleGenerator = _scheduleGenerator;
         }
 
         public IActionResult Index()
         {
-            return View(repository.Machines);
+            try
+            {               
+                repository.Load();
+                return View(new MainViewModel
+                {
+                    Machines = repository.Machines,
+                    Errors = repository.CheckOut()
+                });
+            }
+            catch (ExcelDataException e)
+            {
+                TempData["message"] = "Неверные данные в xlsx-файлах // " + e.Message;
+                return View("Error");
+            }
+            catch (Exception e)
+            {
+                TempData["message"] = e.Message;
+                return View("Error");
+            }
+
         }
 
         public IActionResult ExportToExcel()
@@ -35,29 +55,41 @@ namespace MetallFactory.Controllers
 
         public IActionResult Schedule()
         {
-            scheduleGenerator.Generate();
-            return View(scheduleGenerator.GetSchedule());
+            try
+            {
+                scheduleGenerator.Generate();
+                return View(scheduleGenerator.GetSchedule());
+            }
+            catch (Exception e)
+            {
+                TempData["message"] = e.Message;
+                return View("Error");
+            }
+
         }
         public JsonResult GetChart()
         {
-
+            repository.Load();
             var groups = from p in repository.Parties
-                      join mat in repository.Materials on p.MaterialId equals mat.Id
-                      group repository.Parties by mat.Name into g
-                      select new {Name = g.Key, Count = g.Count() };
+                         join mat in repository.Materials on p.MaterialId equals mat.Id
+                         group repository.Parties by mat.Name into g
+                         select new { Name = g.Key, Count = g.Count() };
             var Names = groups.Select(x => x.Name);
             var Quantity = groups.Select(x => x.Count);
 
 
-            return Json(new {
+            return Json(new
+            {
                 names = Names,
-                quantity = Quantity});
+                quantity = Quantity
+            });
         }
 
         public IActionResult Competitors()
         {
-            var data = repository.Competitors;
-            return View(data);
+            repository.Load();
+            
+            return View(repository.StructuredTimes);
         }
     }
 }

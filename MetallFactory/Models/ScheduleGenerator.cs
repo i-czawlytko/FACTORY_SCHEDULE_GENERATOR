@@ -26,6 +26,7 @@ namespace MetallFactory.Models
         }
         public List<ScheduleRow> Generate()
         {
+            repository.Load();
             var parties = repository.Parties;
             int current_time;
 
@@ -45,23 +46,33 @@ namespace MetallFactory.Models
                     bool party_was_found = false;
                     foreach(var e in current_machine_info.TimeDict)
                     {
-                        var party = parties.FirstOrDefault(x => x.MaterialId == e.Value);
+                        var party = parties.FirstOrDefault(x => x.MaterialId == e.Item2);
                         if (party != null)
                         {
-                            if (parties.Remove(party))
-                            {
-                                schedule.Add(new ScheduleRow {
-                                    PartyId = party.Id,
-                                    MaterialId=e.Value,
-                                    MachineId=current_machine_info.MachineId,
-                                    StartTime=current_time,
-                                    EndTime=(current_time+e.Key)});
+                            int parties_left = parties.Where(x => x.MaterialId == party.MaterialId).Count();
+                            var comp_dict = repository.Competitors[party.MaterialId];
+                            bool is_better_machine = comp_dict.Any(d => d.Value * parties_left + (next_loading[d.Key] - current_time) < e.Item1);
 
-                                next_loading[current_machine_info.MachineId] += e.Key;
-                                party_was_found = true;
-                                break;
+                            if (!is_better_machine)
+                            {
+                                if (parties.Remove(party))
+                                {
+                                    schedule.Add(new ScheduleRow
+                                    {
+                                        PartyId = party.Id,
+                                        MaterialId = e.Item2,
+                                        MachineId = current_machine_info.MachineId,
+                                        StartTime = current_time,
+                                        EndTime = (current_time + e.Item1)
+                                    });
+
+                                    next_loading[current_machine_info.MachineId] += e.Item1;
+                                    party_was_found = true;
+                                    break;
+                                }
                             }
-                        }                        
+                        }
+                      
                     }
                     if(!party_was_found) next_loading.Remove(m);
                 }

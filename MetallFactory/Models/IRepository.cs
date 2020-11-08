@@ -12,6 +12,8 @@ namespace MetallFactory.Models
         public List<Party> Parties { get; set; }
         public List<TimeInfo> Times { get; set; }
         public List<TIStructured> StructuredTimes { get; set; }
-        public List<CompetitorsInfo> Competitors { get; set; }
+        public Dictionary<int, Dictionary<int, int>> Competitors { get; set; }
+        public void Load();
+        public List<string> CheckOut();
     }
 }

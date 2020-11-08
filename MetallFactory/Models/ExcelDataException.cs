@@ -5,9 +5,10 @@ using System.Threading.Tasks;
 
 namespace MetallFactory.Models
 {
-    public class TIStructured
+    public class ExcelDataException : Exception
     {
-        public int MachineId { get; set; }
-        public List<(int,int)> TimeDict { get; set; }
+        public ExcelDataException(string message)
+            : base(message)
+                { }
     }
 }

@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace MetallFactory.Models
 {
-    public class TIStructured
+    public class CompetitorsInfo
     {
-        public int MachineId { get; set; }
-        public List<(int,int)> TimeDict { get; set; }
+        public int MatId { get; set; }
+        public Dictionary<int,int> MachinesOps { get; set; }
     }
 }

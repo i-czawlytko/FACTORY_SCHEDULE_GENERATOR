@@ -24,6 +24,11 @@ namespace MetallFactory
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddMvc(options =>
+            {
+                //options.Filters.Add(typeof(CustomExceptionFilterAttribute));
+            });
+
             services.AddControllersWithViews();
             services.AddTransient<IRepository, XlsxRepository>();
             services.AddTransient<ScheduleGenerator>();
@@ -34,7 +39,7 @@ namespace MetallFactory
         {
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                //app.UseDeveloperExceptionPage();
             }
             else
             {

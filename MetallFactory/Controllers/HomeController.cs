@@ -85,11 +85,5 @@ namespace MetallFactory.Controllers
             });
         }
 
-        public IActionResult Competitors()
-        {
-            repository.Load();
-            
-            return View(repository.StructuredTimes);
-        }
     }
 }

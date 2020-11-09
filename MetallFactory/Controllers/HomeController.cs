@@ -47,18 +47,21 @@ namespace MetallFactory.Controllers
 
         }
 
-        public IActionResult ExportToExcel()
+        public IActionResult ExportToExcel(int idx)
         {
-            scheduleGenerator.ExportToXlxs();
+            scheduleGenerator.ExportToXlxs(idx);
             return RedirectToAction("Index");
         }
 
-        public IActionResult Schedule()
+        public IActionResult Schedule(int idx)
         {
             try
             {
-                scheduleGenerator.Generate();
-                return View(scheduleGenerator.GetSchedule());
+                //repository.Load();
+                ViewBag.Idx = idx;
+                scheduleGenerator.GenerateAll();
+                var current_schedule = scheduleGenerator.GetAllSchedules()[idx];
+                return View(scheduleGenerator.GetAnySchedule(current_schedule));
             }
             catch (Exception e)
             {
@@ -69,7 +72,7 @@ namespace MetallFactory.Controllers
         }
         public JsonResult GetChart()
         {
-            repository.Load();
+            //repository.Load();
             var groups = from p in repository.Parties
                          join mat in repository.Materials on p.MaterialId equals mat.Id
                          group repository.Parties by mat.Name into g
@@ -85,5 +88,17 @@ namespace MetallFactory.Controllers
             });
         }
 
+        public IActionResult Total()
+        {
+            scheduleGenerator.GenerateAll();
+            return View(scheduleGenerator.GetAllSchedulesVM().Take(3));
+        }
+
+        public IActionResult Testing()
+        {
+            repository.Load();
+
+            return View();
+        }
     }
 }

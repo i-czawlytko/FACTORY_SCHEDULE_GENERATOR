@@ -1,0 +1,12 @@
+﻿@model IEnumerable<ScheduleVM>
+
+<div class="container m-4">
+    <p class="display-4 text-uppercase">Наиболее оптимальные варианты</p>
+    @{ Int32 i = new Int32();}
+    @foreach (var s in Model)
+    {
+
+        <div class="m-2"><a asp-action="Schedule"  asp-route-idx="@i" class="btn btn-lg btn-outline-success">Общая продолжительность - @s.TotalTime</a></div>
+        { i++; }
+    }
+</div>

@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace MetallFactory.Models
 {
@@ -14,19 +15,20 @@ namespace MetallFactory.Models
     {
         private IRepository repository;
 
-        private List<ScheduleRow> schedule;
+        //private List<ScheduleRow> schedule;
         private readonly IWebHostEnvironment _webHostEnvironment;
-
+        private List<List<ScheduleRow>> schedules_all;
 
         public ScheduleGenerator(IRepository repo, IWebHostEnvironment webHostEnvironment)
         {
             repository = repo;
             _webHostEnvironment = webHostEnvironment;
-            schedule = new List<ScheduleRow>();
+            schedules_all = new List<List<ScheduleRow>>();
         }
-        public List<ScheduleRow> Generate()
+        public List<ScheduleRow> Generate(List<TIStructured> time_data )
         {
             repository.Load();
+            var _schedule = new List<ScheduleRow>();
             var parties = repository.Parties;
             int current_time;
 
@@ -42,54 +44,66 @@ namespace MetallFactory.Models
                 var free_machines = next_loading.Where(x=> x.Value == current_time).Select(a => a.Key).ToList();
                 foreach (var m in free_machines)
                 {
-                    var current_machine_info = repository.StructuredTimes.FirstOrDefault(c => c.MachineId == m);
+                    var current_machine_info = time_data.FirstOrDefault(c => c.MachineId == m);
                     bool party_was_found = false;
                     foreach(var e in current_machine_info.TimeDict)
                     {
                         var party = parties.FirstOrDefault(x => x.MaterialId == e.Item2);
                         if (party != null)
                         {
-                            int parties_left = parties.Where(x => x.MaterialId == party.MaterialId).Count();
-                            var comp_dict = repository.Competitors[party.MaterialId];
-                            bool is_better_machine = comp_dict.Any(d => d.Value * parties_left + (next_loading[d.Key] - current_time) < e.Item1);
-
-                            if (!is_better_machine)
+                            if (parties.Remove(party))
                             {
-                                if (parties.Remove(party))
+                                _schedule.Add(new ScheduleRow
                                 {
-                                    schedule.Add(new ScheduleRow
-                                    {
-                                        PartyId = party.Id,
-                                        MaterialId = e.Item2,
-                                        MachineId = current_machine_info.MachineId,
-                                        StartTime = current_time,
-                                        EndTime = (current_time + e.Item1)
-                                    });
+                                    PartyId = party.Id,
+                                    MaterialId = e.Item2,
+                                    MachineId = current_machine_info.MachineId,
+                                    StartTime = current_time,
+                                    EndTime = (current_time + e.Item1)
+                                });
 
-                                    next_loading[current_machine_info.MachineId] += e.Item1;
-                                    party_was_found = true;
-                                    break;
-                                }
+                                next_loading[current_machine_info.MachineId] += e.Item1;
+                                party_was_found = true;
+                                break;
                             }
-                        }
-                      
+                        }                     
                     }
                     if(!party_was_found) next_loading.Remove(m);
                 }
             }
-            return schedule;
+            return _schedule;
 
         }
-
-        public IEnumerable<ScheduleRowVM> GetSchedule()
+        public void GenerateAll()
         {
-            var result = from sr in schedule
+            var combos = repository.AllCombinations;
+            for(int i = 0; i < combos.Count; i++)
+            {
+                var combo = combos[i];
+                this.schedules_all.Add(this.Generate(combo));
+            }
+            
+        }
+
+        public IEnumerable<ScheduleVM> GetAllSchedulesVM()
+        {
+            return schedules_all.Select(s => new ScheduleVM { TotalTime = s.Max(x => x.EndTime) }).OrderBy(s => s.TotalTime);
+        }
+
+        public List<List<ScheduleRow>> GetAllSchedules()
+        {
+            return schedules_all.OrderBy(s => s.Max(x=>x.EndTime)).ToList();
+        }
+
+        public IEnumerable<ScheduleRowVM> GetAnySchedule(List<ScheduleRow> _schedule)
+        {
+            var result = from sr in _schedule
                          join m in repository.Machines on sr.MachineId equals m.Id
                          join mat in repository.Materials on sr.MaterialId equals mat.Id
                          select new ScheduleRowVM { PartyId = sr.PartyId, MachineName = m.Name, MaterialName = mat.Name, StartTime = sr.StartTime, EndTime = sr.EndTime };
             return result;
         }
-        public void ExportToXlxs()
+        public void ExportToXlxs(int idx)
         {
             string contentRootPath = _webHostEnvironment.ContentRootPath;
 
@@ -106,11 +120,14 @@ namespace MetallFactory.Models
                 sch.Cells[1, 4].Value = "Начало";
                 sch.Cells[1, 5].Value = "Окончание";
 
-                this.Generate();
-                var src = this.GetSchedule();
+                //repository.Load();
+                //this.Generate(repository.StructuredTimes);
+                this.GenerateAll();
+                var schedule = this.GetAllSchedules()[idx];
+                var src = this.GetAnySchedule(schedule);
 
                 int counter = 2;
-                foreach(var e in src)
+                foreach (var e in src)
                 {
                     sch.Cells[counter, 1].Value = e.PartyId;
                     sch.Cells[counter, 2].Value = e.MaterialName;

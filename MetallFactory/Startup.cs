@@ -30,7 +30,7 @@ namespace MetallFactory
             });
 
             services.AddControllersWithViews();
-            services.AddTransient<IRepository, XlsxRepository>();
+            services.AddSingleton<IRepository, XlsxRepository>();
             services.AddTransient<ScheduleGenerator>();
         }
 

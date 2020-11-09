@@ -22,6 +22,8 @@ namespace MetallFactory.Models
         public List<TIStructured> StructuredTimes { get; set; }
         public Dictionary<int,Dictionary<int,int>> Competitors { get; set; }
 
+        public List<List<TIStructured>> AllCombinations { get; set; }
+
         private StringBuilder errors;
 
         private readonly IWebHostEnvironment _webHostEnvironment;
@@ -44,8 +46,9 @@ namespace MetallFactory.Models
 
             this.TIRestructure();
             this.LoadCompetitors();
+            this.MakeCombination();
 
-            
+
         }
 
         private void LoadMaterials()
@@ -247,6 +250,74 @@ namespace MetallFactory.Models
             }
 
         }
+        private void MakeCombination()
+        {
+            List<List<TIStructured>> MegaList = new List<List<TIStructured>>();
+            foreach (var e in StructuredTimes)
+            {
+                MegaList.Add(new List<TIStructured>());
+            }
+
+
+            for (int i = 0; i < StructuredTimes.Count; i++)
+            {
+                Combinate(new TIStructured { TimeDict = new List<(int, int)>()}, StructuredTimes[i], MegaList[i]);
+            }
+
+            List<List<TIStructured>> true_mega_list = new List<List<TIStructured>>();
+            TotalCombinations(new List<TIStructured>(), 0, MegaList, true_mega_list);
+
+            this.AllCombinations = true_mega_list;
+        }
+        private static void Combinate(TIStructured list, TIStructured source, List<TIStructured> super_list)
+        {
+            if (!source.TimeDict.Any())
+            {
+                super_list.Add(list);
+                return;
+            }
+
+            for (int i = 0; i < source.TimeDict.Count; i++)
+            {
+                TIStructured new_source = new TIStructured();
+                new_source.MachineId = source.MachineId;
+                new_source.TimeDict = new List<(int, int)>();
+                new_source.TimeDict.AddRange(source.TimeDict);
+
+                TIStructured new_nums = new TIStructured();
+                new_nums.MachineId = source.MachineId;
+                new_nums.TimeDict = new List<(int, int)>();
+                new_nums.TimeDict.AddRange(list.TimeDict);
+
+                var temp = source.TimeDict[i];
+
+                new_source.TimeDict.Remove(temp);
+                new_nums.TimeDict.Add(temp);
+
+                Combinate(new_nums, new_source, super_list);
+            }
+        }
+
+
+        public static void TotalCombinations(List<TIStructured> list_of_list, int row, List<List<TIStructured>> mega_list, List<List<TIStructured>> new_mega_list)
+        {
+            if (list_of_list.Count == mega_list.Count)
+            {
+                new_mega_list.Add(list_of_list);
+                return;
+            }
+
+            foreach (var e in mega_list[list_of_list.Count])
+            {
+                List<TIStructured> new_list_of_list = new List<TIStructured>();
+
+                new_list_of_list.AddRange(list_of_list);
+                new_list_of_list.Add(e);
+
+                TotalCombinations(new_list_of_list, list_of_list.Count, mega_list, new_mega_list);
+            }
+        }
+
 
         private void LoadCompetitors()
         {
@@ -287,15 +358,6 @@ namespace MetallFactory.Models
             if (mats_from_parties.Except(mats_from_times).Any()) errors.Add("В parties.xlsx есть ID материалов, для которых нет оборудования в times.xlsx");
 
             if (mats_from_parties.Except(mats_origin).Any()) errors.Add("В parties.xlsx есть ID материалов, которых нет в nomenclatures.xlsx");
-
-            //if(machines_origin.GroupBy(v=>v).Any(g => g.Count() > 1) ) errors.Add("В machine_tools.xlsx имеются повторяющиеся значения идентификаторов");
-            //if (mats_origin.GroupBy(v => v).Any(g => g.Count() > 1)) errors.Add("В nomenclatures.xlsx имеются повторяющиеся значения идентификаторов");
-
-            //var parties_id = this.Parties.Select(x => x.Id);
-            //if (parties_id.GroupBy(v => v).Any(g => g.Count() > 1)) errors.Add("В parties.xlsx имеются повторяющиеся значения идентификаторов");
-
-            //var pairs_from_times = this.Times.Select(x => (x.MachineId, x.MaterialId) );
-            //if (pairs_from_times.GroupBy(v => v).Any(g => g.Count() > 1)) errors.Add("В times.xlsx имеются повторяющиеся пары ID-материала и ID-оборудования");
 
             return errors;
         }

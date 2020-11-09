@@ -15,5 +15,7 @@ namespace MetallFactory.Models
         public Dictionary<int, Dictionary<int, int>> Competitors { get; set; }
         public void Load();
         public List<string> CheckOut();
+
+        public List<List<TIStructured>> AllCombinations { get; set; }
     }
 }

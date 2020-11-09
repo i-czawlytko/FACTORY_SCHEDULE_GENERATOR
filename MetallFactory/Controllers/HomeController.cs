@@ -94,11 +94,5 @@ namespace MetallFactory.Controllers
             return View(scheduleGenerator.GetAllSchedulesVM().Take(3));
         }
 
-        public IActionResult Testing()
-        {
-            repository.Load();
-
-            return View();
-        }
     }
 }

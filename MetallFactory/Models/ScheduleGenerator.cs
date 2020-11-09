@@ -5,9 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
+
 
 namespace MetallFactory.Models
 {
@@ -15,7 +13,6 @@ namespace MetallFactory.Models
     {
         private IRepository repository;
 
-        //private List<ScheduleRow> schedule;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private List<List<ScheduleRow>> schedules_all;
 
@@ -46,7 +43,7 @@ namespace MetallFactory.Models
                 {
                     var current_machine_info = time_data.FirstOrDefault(c => c.MachineId == m);
                     bool party_was_found = false;
-                    foreach(var e in current_machine_info.TimeDict)
+                    foreach(var e in current_machine_info?.TimeDict ?? new List<(int, int)>())
                     {
                         var party = parties.FirstOrDefault(x => x.MaterialId == e.Item2);
                         if (party != null)
@@ -120,8 +117,6 @@ namespace MetallFactory.Models
                 sch.Cells[1, 4].Value = "Начало";
                 sch.Cells[1, 5].Value = "Окончание";
 
-                //repository.Load();
-                //this.Generate(repository.StructuredTimes);
                 this.GenerateAll();
                 var schedule = this.GetAllSchedules()[idx];
                 var src = this.GetAnySchedule(schedule);
